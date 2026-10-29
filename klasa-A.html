@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Protokół meczowy – DKS Czarni Kozłowa Góra</title>
+  <style>
+    :root {
+      --primary: #1a365d;
+      --accent: #2b6cb0;
+      --border: #cbd5e0;
+      --bg: #f7fafc;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: #1a202c;
+      line-height: 1.45;
+      padding: 16px;
+    }
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    #formularz { display: block; }
+    h1 { font-size: 1.4rem; color: var(--primary); margin-bottom: 4px; }
+    .subtitle { color: #4a5568; margin-bottom: 16px; font-size: 0.9rem; }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+      padding: 16px 18px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+    }
+    .card h2 {
+      font-size: 1.05rem;
+      color: var(--primary);
+      margin-bottom: 10px;
+      padding-bottom: 5px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 8px; }
+    .field { flex: 1; min-width: 150px; }
+    label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 3px; color: #2d3748; }
+    input[type="text"], input[type="date"] {
+      width: 100%;
+      padding: 7px 9px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+    input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+
+    .radio-group { display: flex; gap: 16px; align-items: center; padding-top: 4px; }
+    .radio-group label { font-weight: 500; display: flex; align-items: center; gap: 5px; cursor: pointer; margin: 0; }
+
+    .players-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .players-table th {
+      background: #edf2f7;
+      text-align: center;
+      padding: 6px 3px;
+      border-bottom: 2px solid #cbd5e0;
+      position: sticky; top: 0; z-index: 1;
+      font-size: 0.75rem;
+    }
+    .players-table td { padding: 4px 3px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+    .players-table tr:hover { background: #f7fafc; }
+    .name-col { font-weight: 600; text-align: left; }
+    .dob-col { color: #4a5568; white-space: nowrap; text-align: center; font-size: 0.82rem; }
+    .check-col { text-align: center; width: 56px; }
+    .check-col label {
+      display: flex; flex-direction: column; align-items: center; gap: 1px;
+      font-size: 0.62rem; font-weight: 500; cursor: pointer; margin: 0;
+    }
+    .check-col input { width: 15px; height: 15px; cursor: pointer; }
+
+    .staff-section { margin-top: 4px; }
+    .staff-row {
+      display: grid;
+      grid-template-columns: 30px 1fr 1.3fr 105px;
+      gap: 7px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .staff-row .lp { font-weight: 600; color: #4a5568; font-size: 0.88rem; }
+    .staff-fixed-func { font-weight: 600; font-size: 0.85rem; color: #2d3748; }
+    .staff-row input { margin: 0; font-size: 0.85rem; padding: 5px 7px; }
+
+    /* licznik składu / rezerwowych */
+    .counter-bar {
+      position: sticky; top: 0; z-index: 5;
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+      background: white; padding: 8px 0 10px; margin-bottom: 6px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .badge {
+      display: inline-flex; align-items: baseline; gap: 6px;
+      padding: 6px 12px; border-radius: 999px;
+      font-size: 0.85rem; font-weight: 600;
+      background: #edf2f7; color: #2d3748; border: 1px solid #cbd5e0;
+    }
+    .badge .num { font-size: 1.1rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .badge.full { background: #c6f6d5; border-color: #68d391; color: #22543d; }
+    .badge.partial { background: #fefcbf; border-color: #ecc94b; color: #744210; }
+    .counter-msg { font-size: 0.82rem; color: #c53030; font-weight: 600; min-height: 1.1em; flex-basis: 100%; }
+    .players-table tr.is-sklad { background: #ebf8ff; }
+    .players-table tr.is-rez { background: #f0fff4; }
+    .check-col input:disabled { cursor: not-allowed; opacity: .35; }
+
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    button {
+      padding: 10px 20px; border: none; border-radius: 8px;
+      font-size: 0.92rem; font-weight: 600; cursor: pointer; transition: all .15s;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: #2c5282; }
+    .btn-secondary { background: #e2e8f0; color: #2d3748; }
+    .btn-secondary:hover { background: #cbd5e0; }
+    .hint { font-size: 0.76rem; color: #718096; margin-top: 6px; line-height: 1.35; }
+    .warn { color: #c53030; font-weight: 600; font-size: 0.82rem; margin-top: 6px; display: none; }
+
+    /* ===== PROTOKOŁ ===== */
+    #protokol {
+      display: none;
+      background: white;
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 6mm 8mm;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      color: #000;
+    }
+
+    .prot-header {
+      text-align: center;
+      margin-bottom: 5px;
+      font-size: 9px;
+      line-height: 1.3;
+    }
+    .prot-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+    .prot-top-item { flex: 1; min-width: 110px; }
+    .prot-top-item label { font-weight: bold; font-size: 9px; display: block; }
+    .prot-value {
+      border-bottom: 1px solid #000;
+      min-height: 15px;
+      padding: 1px 2px;
+      font-size: 10.5px;
+      font-weight: 600;
+    }
+    .strike { text-decoration: line-through; text-decoration-thickness: 2.5px; text-decoration-color: #000; color: #444; }
+
+    table.prot-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 5px;
+      font-size: 9.5px;
+    }
+    table.prot-table th, table.prot-table td {
+      border: 1px solid #000;
+      padding: 1.5px 2px;
+      vertical-align: middle;
+    }
+    table.prot-table th {
+      background: #f0f0f0;
+      font-weight: bold;
+      text-align: center;
+      font-size: 8.5px;
+    }
+    .col-f { width: 24px; text-align: center; font-weight: bold; }
+    .col-nr { width: 24px; text-align: center; }
+    .col-name { text-align: left; }
+    .col-dob { width: 72px; text-align: center; }
+    .col-ilosc { width: 36px; text-align: center; }
+    .col-min { width: 40px; text-align: center; }
+
+    .empty-row td { height: 14px; }
+
+    .legend { font-size: 8.5px; margin: 3px 0 5px; }
+    .kapitan-row { margin: 5px 0; font-size: 10px; }
+    .kapitan-row .line { display: inline-block; min-width: 55px; border-bottom: 1px solid #000; height: 13px; }
+
+    .staff-table td { height: 16px; }
+    .staff-func { width: 90px; font-weight: bold; font-size: 9px; text-align: center; }
+
+    .confirm { margin-top: 6px; font-size: 9px; line-height: 1.3; }
+    .sign-row { margin-top: 10px; font-size: 10px; }
+    .sign-line { border-bottom: 1px solid #000; height: 20px; margin-top: 2px; width: 50%; }
+
+    .rodo {
+      margin-top: 8px;
+      font-size: 6.5px;
+      line-height: 1.15;
+      color: #333;
+      border-top: 1px solid #999;
+      padding-top: 4px;
+    }
+
+    .no-print { margin-top: 16px; text-align: center; }
+
+    @media print {
+      body { background: white; padding: 0; }
+      #formularz, .no-print { display: none !important; }
+      #protokol {
+        display: block !important;
+        padding: 4mm 6mm;
+        max-width: none;
+        box-shadow: none;
+      }
+      @page { size: A4; margin: 5mm; }
+    }
+    @media screen {
+      #protokol { box-shadow: 0 0 16px rgba(0,0,0,.1); border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div id="formularz">
+      <h1>Protokół meczowy – DKS Czarni Kozłowa Góra</h1>
+      <p class="subtitle">Bytom: Klasa A, Puchar Polski • Skład: dokładnie 11 • Rezerwowi: max 9 • Max 1 BR w składzie</p>
+
+      <div class="card">
+        <h2>1. Dane meczu</h2>
+        <div class="row">
+          <div class="field">
+            <label>Strona</label>
+            <div class="radio-group">
+              <label><input type="radio" name="strona" value="gospodarze" checked> Gospodarze</label>
+              <label><input type="radio" name="strona" value="goscie"> Goście</label>
+            </div>
+          </div>
+          <div class="field">
+            <label for="kolor">Kolor strojów</label>
+            <input type="text" id="kolor" placeholder="np. czarno-białe">
+          </div>
+          <div class="field">
+            <label for="data">Data zawodów</label>
+            <input type="date" id="data">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>2. Zawodnicy</h2>
+        <p class="hint" style="margin-bottom:8px">
+          <b>Na meczu</b> – zawodnik w protokole<br>
+          <b>Skład</b> – podstawowy (dokładnie <b>11</b>). Bez „Skład” → rezerwowy (max <b>9</b>)<br>
+          <b>BR</b> – bramkarz. W składzie podstawowym może być <b>tylko 1</b> BR. W rezerwie dowolna liczba.<br>
+          <b>K</b> – kapitan (tylko jeden)
+        </p>
+        <div class="counter-bar">
+          <span id="badgeSklad" class="badge"><span>Skład</span> <span class="num">0/11</span></span>
+          <span id="badgeRez" class="badge"><span>Rezerwowi</span> <span class="num">0/9</span></span>
+          <span id="counterMsg" class="counter-msg"></span>
+        </div>
+        <div style="overflow-x:auto; max-height: 440px; overflow-y:auto;">
+          <table class="players-table">
+            <thead>
+              <tr>
+                <th style="width:28px">Lp.</th>
+                <th style="text-align:left">Nazwisko i imię</th>
+                <th style="width:78px">Data ur.</th>
+                <th class="check-col">Na meczu</th>
+                <th class="check-col">Skład</th>
+                <th class="check-col">BR</th>
+                <th class="check-col">K</th>
+              </tr>
+            </thead>
+            <tbody id="playersBody"></tbody>
+          </table>
+        </div>
+        <div class="btn-row" style="margin-top:8px">
+          <button type="button" class="btn-secondary" onclick="wyczyscWybor()">Wyczyść wybór</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>3. Osoby na ławce</h2>
+        <div class="staff-section">
+          <div class="staff-row">
+            <div class="lp">1.</div>
+            <div class="staff-fixed-func">TRENER</div>
+            <input type="text" id="staff-name-0" placeholder="Imię i nazwisko">
+            <input type="text" id="staff-lic-0" placeholder="Nr licencji">
+          </div>
+          <div class="staff-row">
+            <div class="lp">2.</div>
+            <div class="staff-fixed-func">II TRENER</div>
+            <input type="text" id="staff-name-1" placeholder="Imię i nazwisko">
+            <input type="text" id="staff-lic-1" placeholder="Nr licencji">
+          </div>
+          <div class="staff-row">
+            <div class="lp">3.</div>
+            <div class="staff-fixed-func">KIEROWNIK</div>
+            <input type="text" id="staff-name-2" placeholder="Imię i nazwisko">
+            <input type="text" id="staff-lic-2" placeholder="Nr licencji">
+          </div>
+          <div class="staff-row">
+            <div class="lp">4.</div>
+            <div class="staff-fixed-func">MASAŻYSTA</div>
+            <input type="text" id="staff-name-3" placeholder="Imię i nazwisko">
+            <input type="text" id="staff-lic-3" placeholder="Nr licencji">
+          </div>
+          <div class="staff-row">
+            <div class="lp">5.</div>
+            <input type="text" id="staff-func-4" placeholder="Funkcja">
+            <input type="text" id="staff-name-4" placeholder="Imię i nazwisko">
+            <input type="text" id="staff-lic-4" placeholder="Nr licencji">
+          </div>
+          <div class="staff-row">
+            <div class="lp">6.</div>
+            <input type="text" id="staff-func-5" placeholder="Funkcja">
+            <input type="text" id="staff-name-5" placeholder="Imię i nazwisko">
+            <input type="text" id="staff-lic-5" placeholder="Nr licencji">
+          </div>
+          <div class="staff-row">
+            <div class="lp">7.</div>
+            <input type="text" id="staff-func-6" placeholder="Funkcja">
+            <input type="text" id="staff-name-6" placeholder="Imię i nazwisko">
+            <input type="text" id="staff-lic-6" placeholder="Nr licencji">
+          </div>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <div class="field">
+            <label for="minuty">Protokół dostarczono sędziemu na ___ minut przed meczem</label>
+            <input type="text" id="minuty" value="30">
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn-primary" onclick="generujProtokol()">Generuj protokół do druku</button>
+      </div>
+      <p class="hint">
+        Numery koszulek, numer kapitana i podpisy – puste (długopis).<br>
+        Bramki: kolumna podzielona na „ilość” i „minuty” (również w rezerwach).
+      </p>
+    </div>
+
+    <!-- PROTOKOŁ -->
+    <div id="protokol">
+      <div class="prot-header">
+        <strong>Uwaga:</strong> wypełniony protokół należy zwrócić sędziemu najpóźniej na 30 min przed rozpoczęciem zawodów
+      </div>
+
+      <div class="prot-top">
+        <div class="prot-top-item">
+          <label>GOSPODARZE / GOŚCIE:</label>
+          <div class="prot-value" id="p-strona"></div>
+        </div>
+        <div class="prot-top-item">
+          <label>kolor strojów:</label>
+          <div class="prot-value" id="p-kolor"></div>
+        </div>
+        <div class="prot-top-item">
+          <label>data zawodów:</label>
+          <div class="prot-value" id="p-data"></div>
+        </div>
+      </div>
+
+      <!-- Skład podstawowy (max 11) -->
+      <table class="prot-table">
+        <thead>
+          <tr>
+            <th class="col-f" rowspan="2">F</th>
+            <th class="col-nr" rowspan="2">nr</th>
+            <th class="col-name" rowspan="2">NAZWISKO I IMIĘ ZAWODNIKA<br>(wypisywać drukowanymi literami)</th>
+            <th class="col-dob" rowspan="2">data urodzenia<br>(dd-mm-rr)</th>
+            <th colspan="2">bramki</th>
+          </tr>
+          <tr>
+            <th class="col-ilosc">ilość</th>
+            <th class="col-min">minuty</th>
+          </tr>
+        </thead>
+        <tbody id="p-sklad-body"></tbody>
+      </table>
+
+      <!-- Rezerwy (też z bramkami) -->
+      <table class="prot-table" style="margin-top:6px">
+        <thead>
+          <tr>
+            <th class="col-f" rowspan="2">F</th>
+            <th class="col-nr" rowspan="2">nr</th>
+            <th class="col-name" rowspan="2">NAZWISKO I IMIĘ ZAWODNIKA REZERWOWEGO<br>(wypisywać drukowanymi literami)</th>
+            <th class="col-dob" rowspan="2">data urodzenia<br>(dd-mm-rr)</th>
+            <th colspan="2">bramki</th>
+          </tr>
+          <tr>
+            <th class="col-ilosc">ilość</th>
+            <th class="col-min">minuty</th>
+          </tr>
+        </thead>
+        <tbody id="p-rezerwy-body"></tbody>
+      </table>
+
+      <div class="legend">
+        F – FUNKCJA : BR – bramkarz ; M – młodzieżowiec ; K – kapitan
+      </div>
+
+      <div class="kapitan-row">
+        Kapitan, numer: <span class="line"></span>
+        &nbsp;&nbsp;&nbsp; podpis <span class="line" style="min-width:140px"></span>
+      </div>
+
+      <div style="margin-top:6px; font-weight:bold; font-size:10px;">
+        Wykaz osób uprawnionych do przebywania na ławce dla zawodników rezerwowych
+      </div>
+      <table class="prot-table staff-table">
+        <thead>
+          <tr>
+            <th style="width:24px">Lp.</th>
+            <th>NAZWISKO I IMIĘ (wypisywać drukowanymi literami)</th>
+            <th style="width:80px">NUMER<br>LICENCJI<br>TRENERA</th>
+            <th class="staff-func">FUNKCJA</th>
+          </tr>
+        </thead>
+        <tbody id="p-staff-body"></tbody>
+      </table>
+
+      <div class="confirm">
+        Potwierdzam prawidłowość powyższych danych oraz posiadanie przez zawodników ważnych badań lekarskich w dniu meczu.<br>
+        Protokół dostarczono sędziemu na <strong id="p-minuty">____</strong> minut przed rozpoczęciem zawodów.
+      </div>
+
+      <div class="sign-row">
+        <div>Kierownik drużyny (podpis):</div>
+        <div class="sign-line"></div>
+      </div>
+
+      <div class="rodo">
+        Organizator zawodów jako Administrator danych zawartych w niniejszym sprawozdaniu informuje, że dane zawodników i innych osób będą
+        przetwarzane na podstawie prawnie usprawiedliwionego interesu Administratora, jakim jest udokumentowanie przebiegu zawodów piłki
+        nożnej (art. 6 ust. 1 lit. f RODO). Osobom, których dane dotyczą przysługuje prawo żądania dostępu, aktualizacji, ograniczenia przetwarzania
+        oraz wniesienia sprzeciwu na dalsze ich przetwarzanie na zasadach określonych w art. 15-22 RODO. Dane mogą być udostępniane
+        podmiotom, które są upoważnione do tego na podstawie przepisów prawa oraz podmiotom, którym administrator powierzył dane.
+        W sprawach spornych dotyczących przetwarzania danych osobowych osobom, których dane dotyczą przysługuje również prawo wniesienia
+        skargi do Prezesa UODO (uodo.gov.pl). Dane będą przetwarzane przez czas niezbędny do realizacji celu, dla którego są gromadzone, po jego
+        realizacji dane mogą być przechowywane jedynie w celach archiwalnych, zgodnie z obowiązującymi przepisami. Więcej informacji odnośnie
+        skorzystania ze swoich praw można odnaleźć na stronie Organizatora w zakładce RODO.
+      </div>
+
+      <div class="no-print">
+        <button type="button" class="btn-primary" onclick="window.print()">🖨 Drukuj / Zapisz jako PDF</button>
+        <button type="button" class="btn-secondary" onclick="wrocDoFormularza()">← Wróć do formularza</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const MAX_SKLAD = 11;
+    const MAX_REZ = 9;
+
+    // Lista wg dokumentu „Lista podstawowa/uzupełniająca zawodników potwierdzonych i uprawnionych do gry – sezon 2026/2027”
+    // (data urodzenia w formacie dd-mm-rrrr). Numeracja Lp. liczona automatycznie.
+    const zawodnicy = [
+      { nazwisko: "BIAŁAS",        imie: "JAKUB",   dob: "26-02-2010" },
+      { nazwisko: "BISKUP",        imie: "MACIEJ",  dob: "07-11-1993" },
+      { nazwisko: "CEBULA",        imie: "KRYSTIAN", dob: "20-10-2007" },
+      { nazwisko: "CICHY",         imie: "ALEKSANDER", dob: "02-06-2008" },
+      { nazwisko: "DIKTA",         imie: "SEWERYN", dob: "25-01-2007" },
+      { nazwisko: "DRAMSKI",       imie: "ARTUR",   dob: "11-02-1997" },
+      { nazwisko: "DRÓŻDZ",        imie: "ADAM",    dob: "02-11-1971" },
+      { nazwisko: "DYSZY",         imie: "KACPER",  dob: "20-05-2007" },
+      { nazwisko: "ELIASZ",        imie: "MATEUSZ", dob: "03-03-1999" },
+      { nazwisko: "FLAK",          imie: "RAFAŁ",   dob: "04-10-1991" },
+      { nazwisko: "FRITSCH",       imie: "DAMIAN",  dob: "12-02-1991" },
+      { nazwisko: "GARCARCZYK",    imie: "DAMIAN",  dob: "15-07-1973" },
+      { nazwisko: "GLIKLICH",      imie: "MICHAŁ",  dob: "24-09-2003" },
+      { nazwisko: "GÓRA",          imie: "SEBASTIAN", dob: "08-02-2009" },
+      { nazwisko: "GÓRECKI",       imie: "FILIP",   dob: "19-04-2007" },
+      { nazwisko: "GÓRNIAK",       imie: "MATEUSZ", dob: "07-04-1989" },
+      { nazwisko: "GULDZIŃSKI",    imie: "MATEUSZ", dob: "21-03-1995" },
+      { nazwisko: "GUŁA",          imie: "SZYMON",  dob: "13-09-2007" },
+      { nazwisko: "HANZEL",        imie: "PAWEŁ",   dob: "16-03-2007" },
+      { nazwisko: "HORZELA",       imie: "PAWEŁ",   dob: "06-01-2009" },
+      { nazwisko: "IWANOWSKI",     imie: "PAWEŁ",   dob: "12-01-1983" },
+      { nazwisko: "JAKUBCZAK",     imie: "ROBERT",  dob: "15-08-1997" },
+      { nazwisko: "JANUS",         imie: "KACPER",  dob: "30-01-2007" },
+      { nazwisko: "JOSZKI",        imie: "MICHAŁ",  dob: "11-02-1994" },
+      { nazwisko: "KACZMARSKI",    imie: "MAREK",   dob: "07-06-2008" },
+      { nazwisko: "KAJCA",         imie: "OSKAR",   dob: "08-11-2007" },
+      { nazwisko: "KLIMCZOK",      imie: "MIŁOSZ",  dob: "18-12-2007" },
+      { nazwisko: "KOCENT",        imie: "PATRYK",  dob: "01-07-2001" },
+      { nazwisko: "KOTUŁA",        imie: "ARTUR",   dob: "28-10-1982" },
+      { nazwisko: "KRUPA",         imie: "KAMIL",   dob: "11-10-2006" },
+      { nazwisko: "KUŚ",           imie: "PIOTR",   dob: "30-08-2006" },
+      { nazwisko: "LINDNER",       imie: "FILIP",   dob: "18-04-1996" },
+      { nazwisko: "MATERNA",       imie: "MATEUSZ", dob: "02-05-2006" },
+      { nazwisko: "MICHALSKI",     imie: "MACIEJ",  dob: "01-12-1991" },
+      { nazwisko: "MUCHA",         imie: "DAMIAN",  dob: "12-08-2008" },
+      { nazwisko: "MUSIALIK",      imie: "ADRIAN",  dob: "21-02-1994" },
+      { nazwisko: "NIERADA",       imie: "SZYMON",  dob: "25-02-2010" },
+      { nazwisko: "NIEWIADOMSKI",  imie: "JAN",     dob: "04-06-2008" },
+      { nazwisko: "OLĘDZKI",       imie: "PAWEŁ",   dob: "21-02-2007" },
+      { nazwisko: "PŁACZEK",       imie: "KACPER",  dob: "08-04-2007" },
+      { nazwisko: "PYRKOSZ",       imie: "FILIP",   dob: "17-10-2008" },
+      { nazwisko: "ROSA",          imie: "DANIEL",  dob: "14-02-2007" },
+      { nazwisko: "RYRKO",         imie: "PIOTR",   dob: "11-06-1988" },
+      { nazwisko: "SKOWRONEK",     imie: "JAKUB",   dob: "30-08-2007" },
+      { nazwisko: "SKUTELA",       imie: "GRZEGORZ", dob: "06-12-1990" },
+      { nazwisko: "SKUTNIK",       imie: "KORNELIUSZ", dob: "22-03-2009" },
+      { nazwisko: "SOWA",          imie: "OSKAR",   dob: "25-05-2007" },
+      { nazwisko: "SPROT",         imie: "SEBASTIAN", dob: "30-08-1993" },
+      { nazwisko: "SROKA",         imie: "KACPER",  dob: "23-09-2009" },
+      { nazwisko: "SUROWIEC",      imie: "MARCIN",  dob: "26-04-1989" },
+      { nazwisko: "TOMANEK",       imie: "WOJCIECH", dob: "31-07-2008" },
+      { nazwisko: "TROJANOWSKI",   imie: "OSKAR",   dob: "04-12-2007" },
+      { nazwisko: "WARMIŃSKI",     imie: "WOJCIECH", dob: "01-12-1992" },
+      { nazwisko: "WAWRZYNIAK",    imie: "KAROL",   dob: "13-04-2010" },
+      { nazwisko: "WŁODARCZYK",    imie: "OLIWIER", dob: "31-01-2008" },
+      { nazwisko: "WOJTACHA",      imie: "SŁAWOMIR", dob: "31-07-1981" },
+      { nazwisko: "ZIĘBA",         imie: "WIKTOR",  dob: "08-12-2009" },
+      { nazwisko: "ŻALEK",         imie: "PATRYK",  dob: "19-08-1994" }
+    ];
+
+    // Jedno źródło prawdy: stan w pamięci (nie odczyt z checkboxów)
+    // na = jest w protokole, sklad = podstawowy skład, br = bramkarz, k = kapitan
+    const stan = zawodnicy.map(() => ({ na: false, sklad: false, br: false, k: false }));
+
+    const cSklad = () => stan.filter(s => s.na && s.sklad).length;
+    const cRez   = () => stan.filter(s => s.na && !s.sklad).length;
+    const cBRSklad = () => stan.filter(s => s.na && s.sklad && s.br).length;
+
+    let msgTimer = null;
+    function komunikat(tekst) {
+      const el = document.getElementById('counterMsg');
+      el.textContent = tekst;
+      clearTimeout(msgTimer);
+      msgTimer = setTimeout(() => { el.textContent = ''; }, 4500);
+    }
+
+    function renderPlayers() {
+      const tbody = document.getElementById('playersBody');
+      tbody.innerHTML = '';
+      zawodnicy.forEach((z, i) => {
+        const tr = document.createElement('tr');
+        tr.id = `row-${i}`;
+        tr.innerHTML = `
+          <td style="text-align:center">${i + 1}</td>
+          <td class="name-col">${z.nazwisko} ${z.imie}</td>
+          <td class="dob-col">${z.dob}</td>
+          <td class="check-col"><label><input type="checkbox" id="na-${i}" onchange="onNa(${i}, this.checked)"><span>na meczu</span></label></td>
+          <td class="check-col"><label><input type="checkbox" id="sklad-${i}" onchange="onSklad(${i}, this.checked)"><span>skład</span></label></td>
+          <td class="check-col"><label><input type="checkbox" id="br-${i}" onchange="onBR(${i}, this.checked)"><span>BR</span></label></td>
+          <td class="check-col"><label><input type="checkbox" id="k-${i}" onchange="onK(${i}, this.checked)"><span>K</span></label></td>
+        `;
+        tbody.appendChild(tr);
+      });
+      odswiez();
+    }
+
+    // Synchronizuje cały widok ze stanem: checkboxy, blokady, kolory wierszy, liczniki
+    function odswiez() {
+      const sk = cSklad(), rz = cRez();
+      stan.forEach((s, i) => {
+        const $ = id => document.getElementById(`${id}-${i}`);
+        $('na').checked = s.na;
+        $('sklad').checked = s.sklad;
+        $('br').checked = s.br;
+        $('k').checked = s.k;
+
+        // blokady (żeby nie dało się przekroczyć limitów)
+        $('na').disabled = !s.na && rz >= MAX_REZ;                    // rezerwa pełna
+        $('sklad').disabled = s.sklad ? rz >= MAX_REZ                 // zdjęcie ze składu = nowy rezerwowy
+                                      : sk >= MAX_SKLAD;              // skład pełny
+        $('br').disabled = !s.br && !s.na && rz >= MAX_REZ;
+
+        const tr = document.getElementById(`row-${i}`);
+        tr.classList.toggle('is-sklad', s.na && s.sklad);
+        tr.classList.toggle('is-rez', s.na && !s.sklad);
+      });
+
+      const bS = document.getElementById('badgeSklad');
+      bS.querySelector('.num').textContent = `${sk}/${MAX_SKLAD}`;
+      bS.className = 'badge ' + (sk === MAX_SKLAD ? 'full' : 'partial');
+
+      const bR = document.getElementById('badgeRez');
+      bR.querySelector('.num').textContent = `${rz}/${MAX_REZ}`;
+      bR.className = 'badge ' + (rz === MAX_REZ ? 'full' : '');
+    }
+
+    // Czy zawodnik może dołączyć do protokołu (jako rezerwowy)?
+    function moznaDodac(i) {
+      return stan[i].na || cRez() < MAX_REZ;
+    }
+
+    function onNa(i, checked) {
+      const s = stan[i];
+      if (checked) {
+        if (!moznaDodac(i)) komunikat(`Rezerwowych może być maksymalnie ${MAX_REZ}.`);
+        else s.na = true;
+      } else {
+        s.na = s.sklad = s.br = s.k = false;
+      }
+      odswiez();
+    }
+
+    function onSklad(i, checked) {
+      const s = stan[i];
+      if (checked) {
+        if (cSklad() >= MAX_SKLAD) {
+          komunikat(`Skład jest już pełny (${MAX_SKLAD}/${MAX_SKLAD}).`);
+        } else if (s.br && cBRSklad() >= 1) {
+          komunikat('W składzie może być tylko 1 bramkarz – ten zawodnik zostaje w rezerwie.');
+        } else {
+          s.na = true;
+          s.sklad = true;
+        }
+      } else {
+        // zdjęcie ze składu = przejście do rezerwowych
+        if (cRez() >= MAX_REZ) komunikat(`Lista rezerwowych jest pełna (${MAX_REZ}/${MAX_REZ}) – najpierw odznacz kogoś z rezerwy.`);
+        else s.sklad = false;
+      }
+      odswiez();
+    }
+
+    function onBR(i, checked) {
+      const s = stan[i];
+      if (checked) {
+        if (!moznaDodac(i)) { komunikat(`Rezerwowych może być maksymalnie ${MAX_REZ}.`); }
+        else if (s.sklad && cBRSklad() >= 1) { komunikat('W składzie może być tylko 1 bramkarz.'); }
+        else { s.na = true; s.br = true; }
+      } else {
+        s.br = false;
+      }
+      odswiez();
+    }
+
+    function onK(i, checked) {
+      const s = stan[i];
+      if (checked) {
+        if (!moznaDodac(i)) { komunikat(`Rezerwowych może być maksymalnie ${MAX_REZ}.`); }
+        else {
+          stan.forEach(x => x.k = false);   // tylko jeden kapitan
+          s.na = true;
+          s.k = true;
+        }
+      } else {
+        s.k = false;
+      }
+      odswiez();
+    }
+
+    function wyczyscWybor() {
+      stan.forEach(s => { s.na = s.sklad = s.br = s.k = false; });
+      odswiez();
+    }
+
+    function generujProtokol() {
+      const sk = cSklad();
+      if (sk !== MAX_SKLAD) {
+        alert(`W składzie podstawowym musi być dokładnie ${MAX_SKLAD} zawodników (teraz: ${sk}).`);
+        return;
+      }
+      if (cBRSklad() > 1) {
+        alert('W składzie podstawowym może być tylko 1 bramkarz!');
+        return;
+      }
+      if (cRez() > MAX_REZ) {
+        alert(`Rezerwowych może być maksymalnie ${MAX_REZ}.`);
+        return;
+      }
+
+      const strona = document.querySelector('input[name="strona"]:checked').value;
+      const kolor = document.getElementById('kolor').value.trim() || '…………………';
+      const dataInput = document.getElementById('data').value;
+      let dataStr = '___-___-202_';
+      if (dataInput) {
+        const [y, m, d] = dataInput.split('-');
+        dataStr = `${d}-${m}-${y}`;
+      }
+
+      if (strona === 'gospodarze') {
+        document.getElementById('p-strona').innerHTML = 'GOSPODARZE / <span class="strike">GOŚCIE</span>';
+      } else {
+        document.getElementById('p-strona').innerHTML = '<span class="strike">GOSPODARZE</span> / GOŚCIE';
+      }
+      document.getElementById('p-kolor').textContent = kolor;
+      document.getElementById('p-data').textContent = dataStr;
+
+      const sklad = [];
+      const rezerwy = [];
+      zawodnicy.forEach((z, i) => {
+        const s = stan[i];
+        if (!s.na) return;
+        const flags = [];
+        if (s.br) flags.push('BR');
+        if (s.k) flags.push('K');
+        const player = { ...z, f: flags.join('/') };
+        (s.sklad ? sklad : rezerwy).push(player);
+      });
+
+      // Stała liczba wierszy: zawsze 11 w składzie i zawsze 9 rezerwowych
+      wypelnijTabele('p-sklad-body', sklad, MAX_SKLAD);
+      wypelnijTabele('p-rezerwy-body', rezerwy, MAX_REZ);
+
+      // Staff
+      const fixedFuncs = ['TRENER', 'II TRENER', 'KIEROWNIK', 'MASAŻYSTA'];
+      const staffBody = document.getElementById('p-staff-body');
+      staffBody.innerHTML = '';
+      for (let i = 0; i < 7; i++) {
+        let func = i < 4 ? fixedFuncs[i] : (document.getElementById('staff-func-' + i).value.trim().toUpperCase() || '');
+        const name = document.getElementById('staff-name-' + i).value.trim();
+        const lic = document.getElementById('staff-lic-' + i).value.trim();
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="text-align:center">${i + 1}</td>
+          <td>${name}</td>
+          <td style="text-align:center">${lic}</td>
+          <td class="staff-func">${func}</td>
+        `;
+        staffBody.appendChild(tr);
+      }
+
+      document.getElementById('p-minuty').textContent = document.getElementById('minuty').value.trim() || '____';
+
+      document.getElementById('formularz').style.display = 'none';
+      document.getElementById('protokol').style.display = 'block';
+      window.scrollTo(0, 0);
+    }
+
+    // Wypełnia tbody dokładnie `liczbaWierszy` wierszami (zawodnicy + puste do uzupełnienia)
+    function wypelnijTabele(tbodyId, lista, liczbaWierszy) {
+      const body = document.getElementById(tbodyId);
+      body.innerHTML = '';
+      for (let i = 0; i < liczbaWierszy; i++) {
+        const z = lista[i];
+        const tr = document.createElement('tr');
+        if (z) {
+          tr.innerHTML = `
+            <td class="col-f">${z.f}</td>
+            <td class="col-nr"></td>
+            <td class="col-name">${z.nazwisko} ${z.imie}</td>
+            <td class="col-dob">${z.dob}</td>
+            <td class="col-ilosc"></td>
+            <td class="col-min"></td>
+          `;
+        } else {
+          tr.className = 'empty-row';
+          tr.innerHTML = '<td></td><td></td><td></td><td></td><td></td><td></td>';
+        }
+        body.appendChild(tr);
+      }
+    }
+
+    function wrocDoFormularza() {
+      document.getElementById('protokol').style.display = 'none';
+      document.getElementById('formularz').style.display = 'block';
+      window.scrollTo(0, 0);
+    }
+
+    renderPlayers();
+    document.getElementById('data').valueAsDate = new Date();
+  </script>
+</body>
+</html>
